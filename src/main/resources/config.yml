@@ -1,0 +1,24 @@
+starttimertrigger:
+  pad:
+    x: 618
+    y: 65
+    z: -85
+    material: LIGHT_WEIGHTED_PRESSURE_PLATE
+stoptimertrigger:
+  pad:
+    world: world
+    x: 536
+    y: 65
+    z: -83
+    material: LIGHT_WEIGHTED_PRESSURE_PLATE
+maze:
+  world: world
+  sidehigh:
+    x: 620
+    z: -43
+  sidelow:
+    x: 536
+    z: -124
+  high: 67
+  low: 63
+  
