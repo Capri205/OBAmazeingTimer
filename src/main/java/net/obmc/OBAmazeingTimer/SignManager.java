@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -175,11 +176,11 @@ public class SignManager {
 				Sign titlesign = (Sign) Bukkit.getWorld( worldname ).getBlockAt( signs.get( "title" + signnum ) ).getState();
 				for ( int line = 0; line < 4; line++ ) {
 					if ( signnum == 1 && line == 1 ) {
-						titlesign.setLine( line, ChatColor.AQUA + "A-MAZE-ING" );
+						titlesign.getSide(Side.FRONT).setLine( line, ChatColor.AQUA + "A-MAZE-ING" );
 					} else if ( signnum == 1 && line == 2 ) {
-						titlesign.setLine( line, ChatColor.GREEN + "LEADERBOARD" );
+						titlesign.getSide(Side.FRONT).setLine( line, ChatColor.GREEN + "LEADERBOARD" );
 					} else {
-						titlesign.setLine( line, titletextcolor + "***************" );
+						titlesign.getSide(Side.FRONT).setLine( line, titletextcolor + "***************" );
 					}
 				}
 				titlesign.update();
@@ -222,21 +223,22 @@ public class SignManager {
 			// put text on our rank, name and time signs for this row on the leaderboard
 			if ( ranknum < numleaders ) {
 				
-				ranksign.setLine( signlinenum, leaderboardtextcolor + "" + ( ranknum  + 1 ) + "." );
-				namesign.setLine( signlinenum, leaderboardtextcolor + Bukkit.getOfflinePlayer( playerids.get( ranknum ) ).getName() );
-				timesign.setLine( signlinenum, leaderboardtextcolor + Utils.formatTime( playertimes.get( ranknum ), "leaderboard" ) );
+				ranksign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "" + ( ranknum  + 1 ) + "." );
+				namesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + Bukkit.getOfflinePlayer( playerids.get( ranknum ) ).getName() );
+				timesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + Utils.formatTime( playertimes.get( ranknum ), "leaderboard" ) );
 				
 			} else {
-				ranksign.setLine( signlinenum, leaderboardtextcolor + "" + ( ranknum + 1 ) + ".");
-				namesign.setLine( signlinenum, leaderboardtextcolor + "Your name here!" );
-				timesign.setLine( signlinenum, leaderboardtextcolor + "Your time here!" );
+				ranksign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "" + ( ranknum + 1 ) + ".");
+				namesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "Your name here!" );
+				timesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "Your time here!" );
 			}
 
 			// send players the sign update event so they see the signs updated in-game
 			for (Player player : Bukkit.getOnlinePlayers()) {
-				player.sendSignChange( signs.get( "ranksign" + ( signnum - 1 ) ), ranksign.getLines() );
-				player.sendSignChange( signs.get( "namesign" + ( signnum - 1 ) ), namesign.getLines() );
-				player.sendSignChange( signs.get( "timesign" + ( signnum - 1 ) ), namesign.getLines() );
+				// reinstate once bug fixed in 1.20.1
+				//player.sendSignChange( signs.get( "ranksign" + ( signnum - 1 ) ), ranksign.getSide(Side.FRONT).getLines() );
+				//player.sendSignChange( signs.get( "namesign" + ( signnum - 1 ) ), namesign.getSide(Side.FRONT).getLines() );
+				//player.sendSignChange( signs.get( "timesign" + ( signnum - 1 ) ), timesign.getSide(Side.FRONT).getLines() );
 			}
 			ranksign.update( true );
 			namesign.update( true );
