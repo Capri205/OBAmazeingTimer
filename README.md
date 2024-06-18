@@ -38,4 +38,4 @@ Here is my gaudy looking leaderboard showing the title row and 3 leaderboard row
 
 You can find A-Maze-Ing in our origial amusement park area at X=634, Z=-85. Join ob-mc.net!
 
-Compiled for 1.20 with Java 17.
+Compiled for 1.21 with Java 21.
