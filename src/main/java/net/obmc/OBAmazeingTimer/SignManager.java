@@ -1,6 +1,10 @@
 package net.obmc.OBAmazeingTimer;
 
 import java.io.File;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +15,7 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -19,7 +24,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import net.md_5.bungee.api.ChatColor;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public class SignManager {
 
@@ -36,10 +43,10 @@ public class SignManager {
 	private BlockFace signdirection = BlockFace.EAST;
 	private Material titlesignmaterial = null;
 	private Material titlebackmaterial = null;
-	private ChatColor titletextcolor = null;
+	private NamedTextColor titletextcolor = null;
 	private Material leaderboardsignmaterial = null;
 	private Material leaderboardbackmaterial = null;
-	private ChatColor leaderboardtextcolor = null;
+	private NamedTextColor leaderboardtextcolor = null;
 	
 	/*
 	 * Draws the in-game leaderboard using signs and backing blocks
@@ -106,7 +113,7 @@ public class SignManager {
 			ConfigurationSection titleconfig = signsconfig.getConfigurationSection( "title" ); 
 			titlesignmaterial = Material.valueOf( titleconfig.getString( "signmaterial" ) );
 			titlebackmaterial = Material.valueOf( titleconfig.getString( "backingmaterial" ) );
-			titletextcolor = ChatColor.of( titleconfig.getString( "textcolor" ) );
+			titletextcolor = NamedTextColor.NAMES.value(titleconfig.getString("textcolor").toLowerCase());
 			coords[0] = titleconfig.getConfigurationSection( "startlocation" ).getDouble( "x" );
 			coords[1] = titleconfig.getConfigurationSection( "startlocation" ).getDouble( "y" );
 			coords[2] = titleconfig.getConfigurationSection( "startlocation" ).getDouble( "z" );
@@ -124,7 +131,7 @@ public class SignManager {
 			ConfigurationSection leaderboardconfig = signsconfig.getConfigurationSection( "leaderboard" );
 			leaderboardsignmaterial = Material.valueOf( leaderboardconfig.getString( "signmaterial" ) );
 			leaderboardbackmaterial = Material.valueOf( leaderboardconfig.getString( "backingmaterial" ) );
-			leaderboardtextcolor = ChatColor.of( leaderboardconfig.getString( "textcolor" ) );
+			leaderboardtextcolor = NamedTextColor.NAMES.value(leaderboardconfig.getString("textcolor").toLowerCase());
 			coords[0] = leaderboardconfig.getConfigurationSection( "startlocation" ).getDouble( "x" );
 			coords[1] = leaderboardconfig.getConfigurationSection( "startlocation" ).getDouble( "y" );
 			coords[2] = leaderboardconfig.getConfigurationSection( "startlocation" ).getDouble( "z" );
@@ -176,11 +183,11 @@ public class SignManager {
 				Sign titlesign = (Sign) Bukkit.getWorld( worldname ).getBlockAt( signs.get( "title" + signnum ) ).getState();
 				for ( int line = 0; line < 4; line++ ) {
 					if ( signnum == 1 && line == 1 ) {
-						titlesign.getSide(Side.FRONT).setLine( line, ChatColor.AQUA + "A-MAZE-ING" );
+						titlesign.getSide(Side.FRONT).line( line, Component.text("A-MAZE-ING", NamedTextColor.AQUA));
 					} else if ( signnum == 1 && line == 2 ) {
-						titlesign.getSide(Side.FRONT).setLine( line, ChatColor.GREEN + "LEADERBOARD" );
+						titlesign.getSide(Side.FRONT).line( line, Component.text("LEADERBOARD", NamedTextColor.GREEN));
 					} else {
-						titlesign.getSide(Side.FRONT).setLine( line, titletextcolor + "***************" );
+						titlesign.getSide(Side.FRONT).line( line, Component.text("***************", titletextcolor));
 					}
 				}
 				titlesign.update();
@@ -222,15 +229,32 @@ public class SignManager {
 
 			// put text on our rank, name and time signs for this row on the leaderboard
 			if ( ranknum < numleaders ) {
-				
-				ranksign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "" + ( ranknum  + 1 ) + "." );
-				namesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + Bukkit.getOfflinePlayer( playerids.get( ranknum ) ).getName() );
-				timesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + Utils.formatTime( playertimes.get( ranknum ), "leaderboard" ) );
-				
+				ranksign.getSide(Side.FRONT).line(signlinenum, Component.text((ranknum + 1) + ".", leaderboardtextcolor));
+				// we need to cater for players falling out of the server cache
+				// so try to get their name from Mojang and if not there, mark them as Unknown
+                String playerName = "Unknown";
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerids.get(ranknum));
+                try {
+                    if (!offlinePlayer.hasPlayedBefore()) {
+                        if (fetchPlayerName(playerids.get(ranknum)) != null) {
+                            playerName = fetchPlayerName(playerids.get(ranknum));
+                        }
+                    } else {
+                        playerName = offlinePlayer.getName();
+                    }
+                } catch (RuntimeException e) {
+                    // Handle the exception, log it, or provide fallback logic
+                    System.out.println("An error occurred while checking hasPlayedBefore: " + e.getMessage());
+                    if (fetchPlayerName(playerids.get(ranknum)) != null) {
+                        playerName = fetchPlayerName(playerids.get(ranknum));
+                    }
+                }
+				namesign.getSide(Side.FRONT).line(signlinenum, Component.text(playerName, leaderboardtextcolor));
+				timesign.getSide(Side.FRONT).line(signlinenum, Component.text(Utils.formatTime(playertimes.get(ranknum), "leaderboard" ), leaderboardtextcolor));
 			} else {
-				ranksign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "" + ( ranknum + 1 ) + ".");
-				namesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "Your name here!" );
-				timesign.getSide(Side.FRONT).setLine( signlinenum, leaderboardtextcolor + "Your time here!" );
+				ranksign.getSide(Side.FRONT).line(signlinenum, Component.text((ranknum + 1) + ".", leaderboardtextcolor));
+				namesign.getSide(Side.FRONT).line(signlinenum, Component.text("Your name here!", leaderboardtextcolor));
+				timesign.getSide(Side.FRONT).line(signlinenum, Component.text("Your time here!", leaderboardtextcolor));
 			}
 
 			// send players the sign update event so they see the signs updated in-game
@@ -283,5 +307,36 @@ public class SignManager {
 			coords[0]--;
 		}
 		return coords;
+	}
+	
+    /*
+     * Get player name from Mojang if they've expired from the server user cache
+     * 
+     * @param player uuid
+     * @return player name
+     */
+    private String fetchPlayerName(UUID uuid) {
+        try {
+            String apiUrl = "https://api.mojang.com/user/profiles/" + uuid.toString() + "/names";
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            // Parse JSON response (you can use a library like Gson or Jackson)
+	         String jsonResponse = response.toString();
+	         // Extract the last name from the JSON array (simplified example)
+	         String playerName = jsonResponse.substring(jsonResponse.lastIndexOf("\"name\":\"") + 8, jsonResponse.lastIndexOf("\"}"));
+	         return playerName;
+        } catch (Exception e) {
+            return "Unknown";
+        }
 	}
 }

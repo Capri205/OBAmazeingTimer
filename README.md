@@ -36,6 +36,6 @@ Here is my gaudy looking leaderboard showing the title row and 3 leaderboard row
 ![OBAmazeingTimer-leaderboard](https://ob-mc.net/repo/OBAmazeingTimer-leaderboard.png)
 ![OBAmazeing](https://ob-mc.net/repo/OBAmazeing.png)
 
-You can find A-Maze-Ing in our origial amusement park area at X=634, Z=-85. Join ob-mc.net!
+You can find A-Maze-Ing in our original amusement park area at X=634, Z=-85. Join ob-mc.net!
 
-Compiled for 1.21 with Java 21.
+Compiled for PaperMC 1.21 using Java 21.

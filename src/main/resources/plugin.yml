@@ -1,9 +1,9 @@
-name: OBAmazeingTimer
-version: 1.0
-description: Timer for solving A-Maze-Ing maze on the build server and recording attempt times on signs
-author: F451
-api-version: "1.21"
-website: https://ob-mc.net
-main: net.obmc.OBAmazeingTimer.OBAmazeingTimer
+name: ${project.name}
+description: ${project.description}
+author: Fahrenheit451|Capri205
+website: ${project.url}
+version: ${project.version}
+api-version: ${api-version}
+main: net.obmc.${project.name}.${project.name}
 depend: []
 commands:
