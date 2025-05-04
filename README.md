@@ -33,8 +33,8 @@ also the default.
 The timer of course can be used for things other than a maze.
 Here is my gaudy looking leaderboard showing the title row and 3 leaderboard rows:
 
-![OBAmazeingTimer-leaderboard](https://ob-mc.net/repo/OBAmazeingTimer-leaderboard.png)
-![OBAmazeing](https://ob-mc.net/repo/OBAmazeing.png)
+![OBAmazeingTimer-leaderboard](src/main/resources/git/images/OBAmazeingTimer-leaderboard.png)
+![OBAmazeing](src/main/resources/git/images/OBAmazeing.png)
 
 You can find A-Maze-Ing in our original amusement park area at X=634, Z=-85. Join ob-mc.net!
 
