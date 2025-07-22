@@ -233,6 +233,7 @@ public class SignManager {
 				// we need to cater for players falling out of the server cache
 				// so try to get their name from Mojang and if not there, mark them as Unknown
                 String playerName = "Unknown";
+                
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerids.get(ranknum));
                 try {
                     if (!offlinePlayer.hasPlayedBefore()) {
@@ -317,7 +318,7 @@ public class SignManager {
      */
     private String fetchPlayerName(UUID uuid) {
         try {
-            String apiUrl = "https://api.mojang.com/user/profiles/" + uuid.toString() + "/names";
+            String apiUrl = "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replaceAll("-", "");
             URL url = new URL(apiUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
