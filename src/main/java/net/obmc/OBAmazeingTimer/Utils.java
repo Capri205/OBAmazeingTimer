@@ -1,6 +1,16 @@
 package net.obmc.OBAmazeingTimer;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -91,4 +101,44 @@ public class Utils {
 			}
 		}
 	}
+	
+    /*
+     * Get player name from Mojang if they've expired from the server user cache
+     * 
+     * @param player uuid
+     * @return player name
+     */
+    public static String fetchPlayerName(UUID uuid) {
+        try {
+            String apiUrl = "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replaceAll("-", "");
+            URI uri = URI.create(apiUrl);
+            URL url = uri.toURL();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(5000);
+            
+            int status = connection.getResponseCode();
+            if (status != 200) {
+                return "Unknown";
+            }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.toString());
+                return root.get("name").asText();
+            }
+
+        } catch (Exception e) {
+            log.log(Level.INFO, "Unable to get player from Mojan API. Using 'Unknown'");
+            return "Unknown";
+        }
+    }
 }

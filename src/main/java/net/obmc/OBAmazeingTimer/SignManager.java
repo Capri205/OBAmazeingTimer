@@ -28,6 +28,8 @@ import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
+import net.obmc.OBAmazeingTimer.Utils;
+
 public class SignManager {
 
 	static Logger log = Logger.getLogger("Minecraft");
@@ -237,17 +239,17 @@ public class SignManager {
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerids.get(ranknum));
                 try {
                     if (!offlinePlayer.hasPlayedBefore()) {
-                        if (fetchPlayerName(playerids.get(ranknum)) != null) {
-                            playerName = fetchPlayerName(playerids.get(ranknum));
+                        if (Utils.fetchPlayerName(playerids.get(ranknum)) != null) {
+                            playerName = Utils.fetchPlayerName(playerids.get(ranknum));
                         }
                     } else {
                         playerName = offlinePlayer.getName();
                     }
                 } catch (RuntimeException e) {
                     // Handle the exception, log it, or provide fallback logic
-                    System.out.println("An error occurred while checking hasPlayedBefore: " + e.getMessage());
-                    if (fetchPlayerName(playerids.get(ranknum)) != null) {
-                        playerName = fetchPlayerName(playerids.get(ranknum));
+                    log.log(Level.INFO, "Unable to get offline player. Using Mojang API...");
+                    if (Utils.fetchPlayerName(playerids.get(ranknum)) != null) {
+                        playerName = Utils.fetchPlayerName(playerids.get(ranknum));
                     }
                 }
 				namesign.getSide(Side.FRONT).line(signlinenum, Component.text(playerName, leaderboardtextcolor));
@@ -308,36 +310,5 @@ public class SignManager {
 			coords[0]--;
 		}
 		return coords;
-	}
-	
-    /*
-     * Get player name from Mojang if they've expired from the server user cache
-     * 
-     * @param player uuid
-     * @return player name
-     */
-    private String fetchPlayerName(UUID uuid) {
-        try {
-            String apiUrl = "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replaceAll("-", "");
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-
-            // Parse JSON response (you can use a library like Gson or Jackson)
-	         String jsonResponse = response.toString();
-	         // Extract the last name from the JSON array (simplified example)
-	         String playerName = jsonResponse.substring(jsonResponse.lastIndexOf("\"name\":\"") + 8, jsonResponse.lastIndexOf("\"}"));
-	         return playerName;
-        } catch (Exception e) {
-            return "Unknown";
-        }
 	}
 }
